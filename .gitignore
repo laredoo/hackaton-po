@@ -6,6 +6,9 @@ __pycache__/
 # Jupiter notebooks
 *.ipynb
 
+# .vscode
+.vscode/
+
 # C extensions
 *.so
 
