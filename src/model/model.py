@@ -8,8 +8,8 @@ class Model:
         self.model = pulp.LpProblem("DesafioUnisoma", pulp.LpMaximize)
 
     def create_variables(self) -> None:
-        patients = self.instance.parameter.patients
-        professionals = self.instance.parameter.professionals
+        patients = self.instance.sets.patients
+        professionals = self.instance.sets.professionals
         places = self.instance.sets.places
         schedule = self.instance.sets.schedules
         self.x = pulp.LpVariable.dicts(
@@ -23,7 +23,7 @@ class Model:
         places = self.instance.sets.places
         schedule = self.instance.sets.schedules
         presencials_locals = [
-            p for p in self.instance.sets.places if not "virtual" in p
+            p for p in self.instance.sets.places if p != "virtual_epsi"
         ]
         days = self.instance.sets.days
         # Parameters
@@ -81,17 +81,16 @@ class Model:
             )
 
         # Constraint 5
-        for D in days:
-            for r in professionals:
-                self.model += (
-                    pulp.lpSum(
-                        self.x[p][r][h][l]
-                        for p in patients
-                        for h in D
-                        for l in presencials_locals
-                    )
-                    <= 1
+        for r in professionals:
+            self.model += (
+                pulp.lpSum(
+                    self.x[p][r][h][l]
+                    for p in patients
+                    for h in schedule
+                    for l in presencials_locals
                 )
+                <= 1
+            )
 
     def solve(self) -> None:
         self.model.solve(pulp.PULP_CBC_CMD(timeLimit=20, msg=True))
@@ -99,20 +98,21 @@ class Model:
 
     def export_result(self) -> None:
 
-        for r in self.instance.professionals:
-            for h in self.instance.schedule:
-                for p in self.instance.patients:
-                    for l in self.instance.places:
+        for r in self.instance.sets.professionals:
+            for h in self.instance.sets.schedules:
+                for p in self.instance.sets.patients:
+                    for l in self.instance.sets.places:
                         if pulp.value(self.x[p][r][h][l]) == 1:
-                            print(f"Cliente {p}, Profissional {r}, Hora {h}, Local {l}")
+                            print(
+                                f"Cliente {p}, Profissional {r}, Hora {h}, Local {l}\n"
+                            )
 
         lista_dados = [
             [p, r, h, l]
-            for r in self.instance.professionals
-            for h in self.instance.schedule
-            for p in self.instance.patients
-            for l in self.instance.places
+            for r in self.instance.sets.professionals
+            for h in self.instance.sets.schedules
+            for p in self.instance.sets.patients
+            for l in self.instance.sets.places
             if pulp.value(self.x[p][r][h][l]) == 1
         ]
-        print(lista_dados)
         return lista_dados

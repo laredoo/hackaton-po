@@ -204,13 +204,23 @@ class ModelImportController:
 
         return professional, professional_consolidated_table
 
+    def get_professionals_hours(self, path):
+        use_cases = self.read_xlsx(path)
+        regra_profissional = pd.DataFrame()
+        regra_profissional = use_cases["RegraProfissional"]
+        professionals_hours = {
+            profissional["profissional"]: profissional["horas_semana"]
+            for _, profissional in regra_profissional.iterrows()
+        }
+        return professionals_hours
+
     def get_dicts(
         self,
         patients_pre_consolidated_table: pd.DataFrame,
         patients_consolidated_table: pd.DataFrame,
         professional_pre_consolidated_table: pd.DataFrame,
         professional_consolidated_table: pd.DataFrame,
-    ) -> Tuple[dict, dict, dict, dict]:
+    ) -> Tuple[dict, dict, dict]:
 
         patient_age_range: pd.DataFrame = (
             patients_consolidated_table[["paciente", "patient_age_range"]]
@@ -266,18 +276,7 @@ class ModelImportController:
             for local in config.PROJECTS
         }
 
-        logger.info("[BACKEND] Professional Hours Constructor")
-        professional_hours = {
-            professionals: 1
-            for _, professionals in professional_pre_consolidated_table.iterrows()
-        }
-
-        return (
-            combination_dict,
-            disponibility_patients,
-            disponibility_professionals,
-            professional_hours,
-        )
+        return combination_dict, disponibility_patients, disponibility_professionals
 
     def handle_input(self, path: str) -> pd.DataFrame:
         patients_pre_consolidated_table, patients_consolidated_table = (
@@ -288,18 +287,15 @@ class ModelImportController:
             self.consolidate_professionals_table(path=path)
         )
 
-        (
-            combination_dict,
-            disponibility_patients,
-            disponibility_professionals,
-            professional_hours,
-        ) = self.get_dicts(
-            patients_pre_consolidated_table,
-            patients_consolidated_table,
-            professional_pre_consolidated_table,
-            professional_consolidated_table,
+        combination_dict, disponibility_patients, disponibility_professionals = (
+            self.get_dicts(
+                patients_pre_consolidated_table,
+                patients_consolidated_table,
+                professional_pre_consolidated_table,
+                professional_consolidated_table,
+            )
         )
-
+        professional_hours = self.get_professionals_hours(path)
         return (
             combination_dict,
             disponibility_patients,

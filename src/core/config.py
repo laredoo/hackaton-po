@@ -12,6 +12,13 @@ class Config:
         "ASA - SÃO JOSÉ",
         "virtual_epsi",
     ]
+    # PROJECTS: list[str] = [
+    #     "UNIDADE 1",
+    #     "UNIDADE 2",
+    #     "UNIDADE 3",
+    #     "UNIDADE 4",
+    #     "virtual_epsi",
+    # ]
 
     AGE_RANGE: list[str] = ["infantil", "adolescente", "adulto"]
 

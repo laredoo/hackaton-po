@@ -22,7 +22,7 @@ class ProblemInstanceController:
             **{"zbr": self.zbr},
             **{"patients_disponibility": self.patients_disponibility},
             **{"professional_disponibility": self.professional_disponibility},
-            **{"professional hours": self.professional_hours},
+            **{"professional_hours": self.professional_hours},
         )
 
     def get_sets(self, use_case: pd.DataFrame):
