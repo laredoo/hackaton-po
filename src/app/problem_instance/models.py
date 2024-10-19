@@ -5,6 +5,7 @@ class Parameter(BaseModel):
     zbr: dict
     patients_disponibility: dict
     professional_disponibility: dict
+    professional_hours: dict
 
 
 class Sets(BaseModel):
@@ -12,6 +13,7 @@ class Sets(BaseModel):
     professionals: list
     schedules: list
     places: list
+    days: list
 
 
 class ProblemInstance(BaseModel):

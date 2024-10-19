@@ -210,7 +210,7 @@ class ModelImportController:
         patients_consolidated_table: pd.DataFrame,
         professional_pre_consolidated_table: pd.DataFrame,
         professional_consolidated_table: pd.DataFrame,
-    ) -> Tuple[dict, dict, dict]:
+    ) -> Tuple[dict, dict, dict, dict]:
 
         patient_age_range: pd.DataFrame = (
             patients_consolidated_table[["paciente", "patient_age_range"]]
@@ -266,7 +266,18 @@ class ModelImportController:
             for local in config.PROJECTS
         }
 
-        return combination_dict, disponibility_patients, disponibility_professionals
+        logger.info("[BACKEND] Professional Hours Constructor")
+        professional_hours = {
+            professionals: 1
+            for _, professionals in professional_pre_consolidated_table.iterrows()
+        }
+
+        return (
+            combination_dict,
+            disponibility_patients,
+            disponibility_professionals,
+            professional_hours,
+        )
 
     def handle_input(self, path: str) -> pd.DataFrame:
         patients_pre_consolidated_table, patients_consolidated_table = (
@@ -277,13 +288,21 @@ class ModelImportController:
             self.consolidate_professionals_table(path=path)
         )
 
-        combination_dict, disponibility_patients, disponibility_professionals = (
-            self.get_dicts(
-                patients_pre_consolidated_table,
-                patients_consolidated_table,
-                professional_pre_consolidated_table,
-                professional_consolidated_table,
-            )
+        (
+            combination_dict,
+            disponibility_patients,
+            disponibility_professionals,
+            professional_hours,
+        ) = self.get_dicts(
+            patients_pre_consolidated_table,
+            patients_consolidated_table,
+            professional_pre_consolidated_table,
+            professional_consolidated_table,
         )
 
-        return combination_dict, disponibility_patients, disponibility_professionals
+        return (
+            combination_dict,
+            disponibility_patients,
+            disponibility_professionals,
+            professional_hours,
+        )

@@ -12,8 +12,12 @@ class Factory:
         return ModelImportController()
 
     def problem_instance_controller(
-        self, zbr, patients_disponibility, professional_disponibility
+        self,
+        zbr,
+        patients_disponibility,
+        professional_disponibility,
+        professional_hours,
     ):
         return ProblemInstanceController(
-            zbr, patients_disponibility, professional_disponibility
+            zbr, patients_disponibility, professional_disponibility, professional_hours
         )

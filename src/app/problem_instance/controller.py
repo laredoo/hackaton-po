@@ -4,17 +4,25 @@ from src.core.config import config
 
 
 class ProblemInstanceController:
-    def __init__(self, zbr, patients_disponibility, professional_disponibility):
+    def __init__(
+        self,
+        zbr,
+        patients_disponibility,
+        professional_disponibility,
+        professional_hours,
+    ):
         self.language = config.DEFAULT_LANGUAGE
         self.zbr = zbr
         self.patients_disponibility = patients_disponibility
         self.professional_disponibility = professional_disponibility
+        self.professional_hours = professional_hours
 
     def get_parameter(self):
         return Parameter(
             **{"zbr": self.zbr},
             **{"patients_disponibility": self.patients_disponibility},
-            **{"professional_disponibility": self.professional_disponibility}
+            **{"professional_disponibility": self.professional_disponibility},
+            **{"professional hours": self.professional_hours},
         )
 
     def get_sets(self, use_case: pd.DataFrame):
@@ -29,11 +37,13 @@ class ProblemInstanceController:
 
         places: list = config.PROJECTS
 
+        days: list = config.DAYS
         return Sets(
             **{"patients": patients},
             **{"professionals": professionals},
             **{"schedules": schedules},
-            **{"places": places}
+            **{"places": places},
+            **{"days": days},
         )
 
     def get_problem_instance(self, sets: Sets):
