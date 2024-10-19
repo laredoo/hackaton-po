@@ -1,5 +1,8 @@
 import pulp
+import logging
 from src.app.problem_instance.models import ProblemInstance, Sets
+
+logger = logging.getLogger(__name__)
 
 
 class Model:
@@ -12,6 +15,7 @@ class Model:
         professionals = self.instance.sets.professionals
         places = self.instance.sets.places
         schedule = self.instance.sets.schedules
+        logger.info("[Model] Generating variables")
         self.x = pulp.LpVariable.dicts(
             "X", (patients, professionals, schedule, places), cat="Binary"
         )
@@ -31,7 +35,7 @@ class Model:
         dispR = self.instance.parameter.professional_disponibility
         z = self.instance.parameter.zbr
         O = self.instance.parameter.professional_hours
-
+        logger.info("[Model] Generating Objective Function")
         # Objective Funtion
         self.model += pulp.lpSum(
             self.x[p][r][h][l]
@@ -40,7 +44,7 @@ class Model:
             for h in schedule
             for l in places
         )
-
+        logger.info("[Model] Generating constraints")
         # Constraint 1
         for p in patients:
             self.model += (
@@ -93,11 +97,12 @@ class Model:
             )
 
     def solve(self) -> None:
+        logger.info("[Model] Calling Solver")
         self.model.solve(pulp.PULP_CBC_CMD(timeLimit=20, msg=True))
         return
 
     def export_result(self) -> None:
-
+        logger.info("[Model] Exporting Result")
         for r in self.instance.sets.professionals:
             for h in self.instance.sets.schedules:
                 for p in self.instance.sets.patients:
