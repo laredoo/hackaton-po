@@ -44,8 +44,8 @@ class Model:
             for h in schedule
             for l in places
         )
-        logger.info("[Model] Generating constraints")
         # Constraint 1
+        logger.info("[Model] Generating constraint 1")
         for p in patients:
             self.model += (
                 pulp.lpSum(
@@ -57,6 +57,7 @@ class Model:
                 <= 1
             )
         # Constraint 2
+        logger.info("[Model] Generating constraint 2 e 3")
         for r in professionals:
             for h in schedule:
                 self.model += (
@@ -73,6 +74,7 @@ class Model:
                         )
 
         # Constraint 4
+        logger.info("[Model] Generating constraint 4")
         for r in professionals:
             self.model += (
                 pulp.lpSum(
@@ -85,16 +87,19 @@ class Model:
             )
 
         # Constraint 5
-        for r in professionals:
-            self.model += (
-                pulp.lpSum(
-                    self.x[p][r][h][l]
-                    for p in patients
-                    for h in schedule
-                    for l in presencials_locals
+        logger.info("[Model] Generating constraint 5")
+        for D in days:
+            print(D)
+            for r in professionals:
+                self.model += (
+                    pulp.lpSum(
+                        self.x[p][r][h][l]
+                        for p in patients
+                        for h in D
+                        for l in presencials_locals
+                    )
+                    <= 1
                 )
-                <= 1
-            )
 
     def solve(self) -> None:
         logger.info("[Model] Calling Solver")
