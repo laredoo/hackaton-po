@@ -110,6 +110,7 @@ class Model:
             for l in self.instance.places
             if pulp.value(self.x[p][r][h][l]) == 1
         ]
+
         return lista_dados
 
 
@@ -198,7 +199,8 @@ def main():
     model.solve()
 
     # Export the result
-    model.export_result()
+    data = model.export_result()
+    table = exporting.create_table(data)
 
 
 if __name__ == "__main__":
