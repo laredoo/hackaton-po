@@ -9,6 +9,9 @@ __pycache__/
 # .vscode
 .vscode/
 
+#docfiles
+docs/
+
 # C extensions
 *.so
 
