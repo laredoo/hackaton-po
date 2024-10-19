@@ -48,6 +48,12 @@ class ModelImportController:
     def read_xlsx(self, path) -> pd.DataFrame:
         return pd.read_excel(path, sheet_name=None)
 
+    def get_local_list(self, path: str) -> list:
+        use_case: dict = self.read_xlsx(path)
+        local_profissional: pd.DataFrame = use_case["LocalProfissional"]
+        local_list: list = list(local_profissional.columns)[1:]
+        return local_list
+
     def index_patients_ages(self, use_case: pd.DataFrame) -> pd.DataFrame:
         # logger.info("[BACKEND] Getting patients age range")
 
@@ -78,11 +84,10 @@ class ModelImportController:
         return aggregated_patients_table
 
     def format_patients_consolidated_table(
-        self, consolidated_table: pd.DataFrame
+        self, consolidated_table: pd.DataFrame, projects: list
     ) -> pd.DataFrame:
         # logger.info("[BACKEND] Applying patients rules")
 
-        projects = config.PROJECTS
         consolidated_table["patient_hours"] = consolidated_table.apply(
             self.format_disponibility, axis=1
         )
@@ -97,7 +102,7 @@ class ModelImportController:
         return consolidated_table
 
     def consolidate_patients_table(
-        self, path: str
+        self, path: str, projects: list
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         logger.info("[BACKEND] Reading PATIENTS DATA")
         use_case: pd.DataFrame = self.read_xlsx(path)
@@ -119,7 +124,7 @@ class ModelImportController:
         )
 
         patients: pd.DataFrame = self.format_patients_consolidated_table(
-            pre_consolidated_table
+            pre_consolidated_table, projects
         )
 
         # logger.info("[BACKEND] Returning consolidated patients table")
@@ -143,10 +148,11 @@ class ModelImportController:
 
         return ages
 
-    def set_professional_use_case(self, use_case: pd.DataFrame) -> pd.DataFrame:
+    def set_professional_use_case(
+        self, use_case: pd.DataFrame, projects: list
+    ) -> pd.DataFrame:
         # logger.info("[BACKEND] Setting PROFESSIONAL data rules")
         age_range = config.AGE_RANGE
-        projects = config.PROJECTS
         use_case["RegraProfissional"]["professional_age_range"] = use_case[
             "RegraProfissional"
         ].apply(lambda x: self.age_range_disponibility(x, age_range), axis=1)
@@ -162,14 +168,14 @@ class ModelImportController:
         return use_case
 
     def consolidate_professionals_table(
-        self, path
+        self, path: str, projects: list
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         logger.info("[BACKEND] Reading PROFESSIONALS DATA")
         use_case: pd.DataFrame = self.read_xlsx(path)
 
         professional_consolidated_table: pd.DataFrame = pd.DataFrame()
 
-        use_case: pd.DataFrame = self.set_professional_use_case(use_case)
+        use_case: pd.DataFrame = self.set_professional_use_case(use_case, projects)
 
         # logger.info("[BACKEND] Merging Professional tables")
         pre_professional: pd.DataFrame = pd.merge(
@@ -216,6 +222,7 @@ class ModelImportController:
 
     def get_dicts(
         self,
+        projects: list,
         patients_pre_consolidated_table: pd.DataFrame,
         patients_consolidated_table: pd.DataFrame,
         professional_pre_consolidated_table: pd.DataFrame,
@@ -258,7 +265,7 @@ class ModelImportController:
             )
             for _, paciente in patients_pre_consolidated_table.iterrows()
             for d in config.AVAILABLE_HOURS
-            for local in config.PROJECTS
+            for local in projects
         }
 
         logger.info("[BACKEND] Professional disponibility Constructor")
@@ -273,22 +280,25 @@ class ModelImportController:
             )
             for _, professionals in professional_pre_consolidated_table.iterrows()
             for d in config.AVAILABLE_HOURS
-            for local in config.PROJECTS
+            for local in projects
         }
 
         return combination_dict, disponibility_patients, disponibility_professionals
 
     def handle_input(self, path: str) -> pd.DataFrame:
+        local_list: list = self.get_local_list(path)
+
         patients_pre_consolidated_table, patients_consolidated_table = (
-            self.consolidate_patients_table(path=path)
+            self.consolidate_patients_table(path=path, projects=local_list)
         )
 
         professional_pre_consolidated_table, professional_consolidated_table = (
-            self.consolidate_professionals_table(path=path)
+            self.consolidate_professionals_table(path=path, projects=local_list)
         )
 
         combination_dict, disponibility_patients, disponibility_professionals = (
             self.get_dicts(
+                local_list,
                 patients_pre_consolidated_table,
                 patients_consolidated_table,
                 professional_pre_consolidated_table,
@@ -301,4 +311,5 @@ class ModelImportController:
             disponibility_patients,
             disponibility_professionals,
             professional_hours,
+            local_list,
         )

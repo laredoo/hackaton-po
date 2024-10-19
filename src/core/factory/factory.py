@@ -13,11 +13,16 @@ class Factory:
 
     def problem_instance_controller(
         self,
+        local_list,
         zbr,
         patients_disponibility,
         professional_disponibility,
         professional_hours,
     ):
         return ProblemInstanceController(
-            zbr, patients_disponibility, professional_disponibility, professional_hours
+            local_list,
+            zbr,
+            patients_disponibility,
+            professional_disponibility,
+            professional_hours,
         )

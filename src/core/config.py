@@ -12,6 +12,7 @@ class Config:
         "ASA - SÃO JOSÉ",
         "virtual_epsi",
     ]
+
     # PROJECTS: list[str] = [
     #     "UNIDADE 1",
     #     "UNIDADE 2",

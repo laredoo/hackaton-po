@@ -9,9 +9,7 @@ from src.model.model import Model
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
-PATH: str = (
-    r"C:\Users\danin\Desktop\Projects\Desafio Unisoma\hackaton-po\docs\cenario_3.xlsx"
-)
+PATH: str = r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_3.xlsx"
 
 
 def create_factory() -> Factory:
@@ -26,6 +24,7 @@ def get_parameters(factory: Factory) -> tuple[dict, dict, dict, dict]:
         disponibility_patients,
         disponibility_professionals,
         professional_hours,
+        local_list,
     ) = input_importer.handle_input(PATH)
     # pp.pprint(disponibility_patients)
     return (
@@ -33,6 +32,7 @@ def get_parameters(factory: Factory) -> tuple[dict, dict, dict, dict]:
         disponibility_patients,
         disponibility_professionals,
         professional_hours,
+        local_list,
     )
 
 
@@ -44,9 +44,11 @@ def main():
         disponibility_patients,
         disponibility_professionals,
         professional_hours,
+        local_list,
     ) = get_parameters(factory)
 
-    problem_instance_controller = factory.problem_instance_controller(
+    problem_instance_controller: ProblemInstance = factory.problem_instance_controller(
+        local_list,
         combination_dict,
         disponibility_patients,
         disponibility_professionals,

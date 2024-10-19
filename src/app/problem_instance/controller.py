@@ -6,12 +6,14 @@ from src.core.config import config
 class ProblemInstanceController:
     def __init__(
         self,
+        projects,
         zbr,
         patients_disponibility,
         professional_disponibility,
         professional_hours,
     ):
         self.language = config.DEFAULT_LANGUAGE
+        self.projects = projects
         self.zbr = zbr
         self.patients_disponibility = patients_disponibility
         self.professional_disponibility = professional_disponibility
@@ -35,7 +37,7 @@ class ProblemInstanceController:
 
         schedules: list = [(d, h) for d in config.DAYS for h in config.AVAILABLE_HOURS]
 
-        places: list = config.PROJECTS
+        places: list = self.projects
 
         days: list = config.DAYS
         return Sets(
