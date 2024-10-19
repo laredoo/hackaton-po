@@ -1,1 +1,4 @@
-import pulp
+import pulp 
+
+class Model:
+    pass
