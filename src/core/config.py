@@ -15,7 +15,7 @@ class Config:
 
     AGE_RANGE: list[str] = ["infantil", "adolescente", "adulto"]
 
-    AVAILABLE_HOURS: str = [
+    AVAILABLE_HOURS: list[str] = [
         "hr_8",
         "hr_9",
         "hr_10",
@@ -30,6 +30,12 @@ class Config:
         "hr_19",
         "hr_20",
     ]
+
+    DAYS: list[str] = ["seg", "ter", "qua", "qui", "sex", "sáb"]
+
+    PATH: str = (
+        r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_1.xlsx"
+    )
 
 
 config: Config = Config()
