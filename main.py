@@ -95,6 +95,8 @@ def posprocessing(
     schedule_table = Exporting.create_table(
         model_data, problem_instance.sets.hours, problem_instance.sets.days
     )
+
+    summary = Exporting.create_summary(problem_instance, model_data)
     # path_excel, _ = os.path.splitext(path_excel)
     # path_excel = f"{path_excel}_output"
     solution = Exporting.create_solution(model_data)
@@ -102,8 +104,10 @@ def posprocessing(
     use_cases["Solução"] = solution
     logger.info("[Results] Exporting Schedule table into Excel")
     use_cases["schedule_table"] = schedule_table
+    logger.info("[Results] Exporting KPI's table into Excel")
+    use_cases["KPI's"] = summary
 
-    save_sheet(path_excel, use_cases, ["Solução", "schedule_table"])
+    save_sheet(path_excel, use_cases, ["Solução", "schedule_table", "KPI's"])
 
 
 def main(path_excel: str):
