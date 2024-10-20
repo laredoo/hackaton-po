@@ -30,6 +30,8 @@ class Model:
             p for p in self.instance.sets.places if p != "virtual_epsi"
         ]
         days = self.instance.sets.days
+        list_days = [[(i, j) for (i, j) in schedule if i == d] for d in days]
+
         # Parameters
         dispP = self.instance.parameter.patients_disponibility
         dispR = self.instance.parameter.professional_disponibility
@@ -88,8 +90,8 @@ class Model:
 
         # Constraint 5
         logger.info("[Model] Generating constraint 5")
-        for D in days:
-            print(D)
+
+        for D in list_days:
             for r in professionals:
                 self.model += (
                     pulp.lpSum(
@@ -103,7 +105,7 @@ class Model:
 
     def solve(self) -> None:
         logger.info("[Model] Calling Solver")
-        self.model.solve(pulp.PULP_CBC_CMD(timeLimit=20, msg=True))
+        self.model.solve(pulp.PULP_CBC_CMD(timeLimit=120, msg=True))
         return
 
     def export_result(self) -> None:

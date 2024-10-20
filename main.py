@@ -6,11 +6,14 @@ from src.app.problem_instance.models import ProblemInstance, Sets
 from src.app.validator.controller import ValidatorController
 from src.core.factory.factory import Factory
 from src.model.model import Model
+from src.posprocessing.excel import Exporting
 
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
-PATH: str = r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_3.xlsx"
+PATH: str = (
+    r"C:\Users\felip\OneDrive\Documents\Desafio_Unisoma\hackaton-po\docs\cenario_1.xlsx"
+)
 
 
 def create_factory() -> Factory:
@@ -83,7 +86,11 @@ def run_model(problem_instance: ProblemInstance):
     model.create_variables()
     model.create_constraints()
     model.solve()
-    model.export_result()
+    lista_dados = model.export_result()
+    df = Exporting.create_table(
+        lista_dados, problem_instance.sets.hours, problem_instance.sets.days
+    )
+    print(df)
 
 
 def main():
