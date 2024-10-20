@@ -103,11 +103,11 @@ def posprocessing(
     logger.info("[Results] Exporting Solution into Excel file ")
     use_cases["Solução"] = solution
     logger.info("[Results] Exporting Schedule table into Excel")
-    use_cases["schedule_table"] = schedule_table
+    use_cases["Tabela de Horários"] = schedule_table
     logger.info("[Results] Exporting KPI's table into Excel")
     use_cases["KPI's"] = summary
 
-    save_sheet(path_excel, use_cases, ["Solução", "schedule_table", "KPI's"])
+    save_sheet(path_excel, use_cases, ["Solução", "Tabela de Horários", "KPI's"])
 
 
 def main(path_excel: str):
