@@ -1,6 +1,8 @@
 import pandas as pd
 from datetime import datetime
 
+from src.app.problem_instance.models import ProblemInstance
+
 
 class Exporting:
     def __init__(self):
@@ -31,3 +33,17 @@ class Exporting:
         df["df_atualizacao"] = datetime.now()
 
         return df
+
+    def create_summary(instance: ProblemInstance, model_data: list[list]):
+
+        patients = instance.sets.patients
+        professionals = instance.sets.professionals
+        places = instance.sets.places
+        schedule = instance.sets.schedules
+
+        dispP = instance.parameter.patients_disponibility
+        dispR = instance.parameter.professional_disponibility
+        z = instance.parameter.zbr
+        O = instance.parameter.professional_hours
+
+        return
