@@ -13,14 +13,6 @@ class Config:
         "virtual_epsi",
     ]
 
-    # PROJECTS: list[str] = [
-    #     "UNIDADE 1",
-    #     "UNIDADE 2",
-    #     "UNIDADE 3",
-    #     "UNIDADE 4",
-    #     "virtual_epsi",
-    # ]
-
     AGE_RANGE: list[str] = ["infantil", "adolescente", "adulto"]
 
     AVAILABLE_HOURS: list[str] = [
@@ -38,6 +30,8 @@ class Config:
         "hr_19",
         "hr_20",
     ]
+
+    VALIDATION_ERROR: bool = False
 
     DAYS: list[str] = ["seg", "ter", "qua", "qui", "sex", "sáb"]
 

@@ -3,6 +3,7 @@ import pprint
 import sys
 
 from src.app.problem_instance.models import ProblemInstance, Sets
+from src.app.validator.controller import ValidatorController
 from src.core.factory.factory import Factory
 from src.model.model import Model
 
@@ -36,9 +37,20 @@ def get_parameters(factory: Factory) -> tuple[dict, dict, dict, dict]:
     )
 
 
-def main():
-    factory = create_factory()
+def validate_input(factory: Factory):
+    validator_controller: ValidatorController = factory.get_validator_controller(
+        path=PATH
+    )
 
+    messages, error = validator_controller.validate_input()
+
+    if error:
+        for m in messages:
+            logger.error(m)
+        exit(500)
+
+
+def preprocess_data(factory: Factory) -> ProblemInstance:
     (
         combination_dict,
         disponibility_patients,
@@ -62,13 +74,28 @@ def main():
     problem_instance: ProblemInstance = (
         problem_instance_controller.get_problem_instance(sets)
     )
+
+    return problem_instance
+
+
+def run_model(problem_instance: ProblemInstance):
     model = Model(problem_instance)
     model.create_variables()
     model.create_constraints()
     model.solve()
     model.export_result()
 
-    return problem_instance.parameter.zbr
+
+def main():
+    factory = create_factory()
+
+    validate_input(factory)
+
+    # problem_instance: ProblemInstance = preprocess_data(factory=factory)
+
+    # run_model(problem_instance=problem_instance)
+
+    # return problem_instance.parameter.zbr
 
 
 if __name__ == "__main__":
