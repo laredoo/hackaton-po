@@ -7,12 +7,13 @@ from src.app.validator.controller import ValidatorController
 from src.core.factory.factory import Factory
 from src.model.model import Model
 from src.posprocessing.excel import Exporting
+from src.utils.utils import read_sheet
 
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
 PATH: str = (
-    r"C:\Users\felip\OneDrive\Documents\Desafio_Unisoma\hackaton-po\docs\cenario_1.xlsx"
+    r"C:\Users\danin\Desktop\Projects\Desafio Unisoma\hackaton-po\docs\cenario_3.xlsx"
 )
 
 
@@ -30,7 +31,7 @@ def get_parameters(factory: Factory) -> tuple[dict, dict, dict, dict]:
         professional_hours,
         local_list,
     ) = input_importer.handle_input(PATH)
-    # pp.pprint(disponibility_patients)
+
     return (
         combination_dict,
         disponibility_patients,
@@ -87,22 +88,27 @@ def run_model(problem_instance: ProblemInstance):
     model.create_constraints()
     model.solve()
     lista_dados = model.export_result()
-    df = Exporting.create_table(
-        lista_dados, problem_instance.sets.hours, problem_instance.sets.days
-    )
+
+    return lista_dados
+
+
+def posprocessing(lista_dados, hours, days):
+    df = Exporting.create_table(lista_dados, hours, days)
     print(df)
 
 
 def main():
+    use_cases: dict = read_sheet(PATH)
     factory = create_factory()
 
     validate_input(factory)
 
-    # problem_instance: ProblemInstance = preprocess_data(factory=factory)
+    problem_instance: ProblemInstance = preprocess_data(factory=factory)
 
-    # run_model(problem_instance=problem_instance)
+    lista_dados = run_model(problem_instance=problem_instance)
 
-    # return problem_instance.parameter.zbr
+    posprocessing(lista_dados, problem_instance.sets.hours, problem_instance.sets.days)
+    return problem_instance.parameter.zbr
 
 
 if __name__ == "__main__":
@@ -115,3 +121,4 @@ if __name__ == "__main__":
 
     # main function
     main()
+    logger.info("Execution finished")
