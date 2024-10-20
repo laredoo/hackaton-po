@@ -14,6 +14,7 @@ class Sets(BaseModel):
     schedules: list
     places: list
     days: list
+    hours: list
 
 
 class ProblemInstance(BaseModel):

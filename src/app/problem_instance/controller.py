@@ -40,12 +40,16 @@ class ProblemInstanceController:
         places: list = self.projects
 
         days: list = config.DAYS
+
+        hours: list = config.AVAILABLE_HOURS
+
         return Sets(
             **{"patients": patients},
             **{"professionals": professionals},
             **{"schedules": schedules},
             **{"places": places},
             **{"days": days},
+            **{"hours": hours},
         )
 
     def get_problem_instance(self, sets: Sets):
