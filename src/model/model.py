@@ -47,7 +47,7 @@ class Model:
             for l in places
         )
         # Constraint 1
-        logger.info("[Model] Generating constraint 1")
+        logger.info("[Model] Generating constraints (1)")
         for p in patients:
             self.model += (
                 pulp.lpSum(
@@ -59,7 +59,7 @@ class Model:
                 <= 1
             )
         # Constraint 2
-        logger.info("[Model] Generating constraint 2 e 3")
+        logger.info("[Model] Generating constraints (2) and (3)")
         for r in professionals:
             for h in schedule:
                 self.model += (
@@ -76,7 +76,7 @@ class Model:
                         )
 
         # Constraint 4
-        logger.info("[Model] Generating constraint 4")
+        logger.info("[Model] Generating constraint (4)")
         for r in professionals:
             self.model += (
                 pulp.lpSum(
@@ -89,7 +89,7 @@ class Model:
             )
 
         # Constraint 5
-        logger.info("[Model] Generating constraint 5")
+        logger.info("[Model] Generating constraint (5)")
 
         for D in list_days:
             for r in professionals:
@@ -104,22 +104,12 @@ class Model:
                 )
 
     def solve(self) -> None:
-        logger.info("[Model] Calling Solver")
-        self.model.solve(pulp.PULP_CBC_CMD(timeLimit=120, msg=True))
+        logger.info("[Model] Calling Solver CBC(COIN BRANCH AND CUT)")
+        self.model.solve(pulp.PULP_CBC_CMD(timeLimit=600, msg=False))
         return
 
     def export_result(self) -> None:
-        logger.info("[Model] Exporting Result")
-        for r in self.instance.sets.professionals:
-            for h in self.instance.sets.schedules:
-                for p in self.instance.sets.patients:
-                    for l in self.instance.sets.places:
-                        if pulp.value(self.x[p][r][h][l]) == 1:
-                            print(
-                                f"Cliente {p}, Profissional {r}, Hora {h}, Local {l}\n"
-                            )
-
-        lista_dados = [
+        model_data = [
             [p, r, h, l]
             for r in self.instance.sets.professionals
             for h in self.instance.sets.schedules
@@ -127,4 +117,4 @@ class Model:
             for l in self.instance.sets.places
             if pulp.value(self.x[p][r][h][l]) == 1
         ]
-        return lista_dados
+        return model_data
