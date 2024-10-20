@@ -56,7 +56,10 @@ def validate_input(factory: Factory, use_cases: dict, path: str):
             """
         )
 
-        exit(500)
+        while True:
+            user_input = input("Press '0' to exit the application...\n")
+            if user_input == "0":
+                sys.exit()
 
 
 def preprocess_data(factory: Factory, path_excel: str) -> ProblemInstance:
