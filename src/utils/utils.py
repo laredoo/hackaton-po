@@ -7,9 +7,6 @@ def read_sheet(path: str) -> dict:
 
 def save_sheet(path: str, use_cases: dict, tabs: list = None) -> None:
 
-    # with pd.ExcelWriter(path) as writer:
-    #     for sheet_name, df in use_cases.items():
-    #         df.to_excel(writer, sheet_name=sheet_name, index=False)
     for tab in tabs:
         with pd.ExcelWriter(
             path, engine="openpyxl", mode="a", if_sheet_exists="overlay"
@@ -19,5 +16,4 @@ def save_sheet(path: str, use_cases: dict, tabs: list = None) -> None:
                 sheet_name=tab,
                 index=False,
                 header=False,
-                # startrow=writer.sheets[tab].max_row,
             )
