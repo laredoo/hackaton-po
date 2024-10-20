@@ -30,12 +30,41 @@ class ValidatorController:
         # clean Inconsistências tab before validate
         self.limpar_aba_inconsistencias()
 
+        error_list = []
+
         # Checking age
         logger.info("[VALIDATOR] Checking Patient Age")
         error = self.validator.check_patient_age()
+        error_list.append(error)
 
-        # Checking schedule
-        logger.info("[VALIDATOR] Checking Schedule")
-        error = self.validator.check_has_schedule()
+        # Checking schedule profissional
+        logger.info("[VALIDATOR] Checking Schedule Profissional")
+        error = self.validator.check_has_schedule_profissional()
+        error_list.append(error)
 
-        return error
+        # Checking schedule profissional
+        logger.info("[VALIDATOR] Checking Local Profissional")
+        error = self.validator.check_has_places_profissional()
+        error_list.append(error)
+
+        # Checking schedule profissional
+        logger.info("[VALIDATOR] Checking Unique Profissional List")
+        error = self.validator.check_same_professionals()
+        error_list.append(error)
+
+        # Checking schedule patient
+        logger.info("[VALIDATOR] Checking Schedule Patient")
+        error = self.validator.check_has_schedule_patient()
+        error_list.append(error)
+
+        # Checking schedule profissional
+        logger.info("[VALIDATOR] Checking Local Patient")
+        error = self.validator.check_has_places_patient()
+        error_list.append(error)
+
+        # Checking schedule profissional
+        logger.info("[VALIDATOR] Checking Unique Patients List")
+        error = self.validator.check_same_patients()
+        error_list.append(error)
+
+        return error_list

@@ -12,7 +12,7 @@ from src.utils.utils import read_sheet, save_sheet
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
-PATH: str = r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_3.xlsx"
+PATH: str = r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_4.xlsx"
 
 
 def create_factory() -> Factory:
@@ -111,9 +111,9 @@ def main():
 
     validate_input(factory, use_cases)
 
-    # problem_instance: ProblemInstance = preprocess_data(factory=factory)
+    problem_instance: ProblemInstance = preprocess_data(factory=factory)
 
-    # lista_dados = run_model(problem_instance=problem_instance)
+    lista_dados = run_model(problem_instance=problem_instance)
 
     model_data = run_model(problem_instance=problem_instance)
 
