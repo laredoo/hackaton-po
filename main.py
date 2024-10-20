@@ -12,9 +12,7 @@ from src.utils.utils import read_sheet
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
-PATH: str = (
-    r"C:\Users\danin\Desktop\Projects\Desafio Unisoma\hackaton-po\docs\cenario_3.xlsx"
-)
+PATH: str = r"C:\Users\luckr\OneDrive\Área de Trabalho\hackaton-po\docs\cenario_3.xlsx"
 
 
 def create_factory() -> Factory:
@@ -41,16 +39,14 @@ def get_parameters(factory: Factory) -> tuple[dict, dict, dict, dict]:
     )
 
 
-def validate_input(factory: Factory):
+def validate_input(factory: Factory, use_cases: dict):
     validator_controller: ValidatorController = factory.get_validator_controller(
-        path=PATH
+        path=PATH, use_cases=use_cases
     )
 
-    messages, error = validator_controller.validate_input()
+    error = validator_controller.validate_input()
 
     if error:
-        for m in messages:
-            logger.error(m)
         exit(500)
 
 
@@ -105,11 +101,14 @@ def posprocessing(
 
 def main():
     use_cases: dict = read_sheet(PATH)
+
     factory = create_factory()
 
-    # validate_input(factory)
+    validate_input(factory, use_cases)
 
-    problem_instance: ProblemInstance = preprocess_data(factory=factory)
+    # problem_instance: ProblemInstance = preprocess_data(factory=factory)
+
+    # lista_dados = run_model(problem_instance=problem_instance)
 
     model_data = run_model(problem_instance=problem_instance)
 
