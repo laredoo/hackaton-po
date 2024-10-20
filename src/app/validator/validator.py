@@ -6,23 +6,155 @@ from src.app.validator.base_validator import BaseValidator
 class Validator(BaseValidator):
     def __init__(self, path: str, use_cases: dict):
         super().__init__(path)
-        self.error: bool = False
         self.use_cases: dict = use_cases
 
-    def check_patient_age(self):
+    def check_patient_age(self) -> bool:
+
+        error: bool = False
+
+        error_list: list = []
 
         idade_paciente: pd.DataFrame = self.use_cases["IdadePaciente"]
 
         missing_age = idade_paciente[idade_paciente["idade"].isnull()]
 
         if missing_age["idade"].isnull().any():
-            message: str = (
-                f"Paciente [{missing_age['paciente'].iloc[0]}] sem idade cadastrada"
-            )
-            error_dict: dict = self.write_inconsistency(
-                tabela="IdadePaciente", tipo="ERRO", mensagem=message
-            )
-            df_erro = pd.DataFrame(error_dict)
+            for _, l in missing_age.iterrows():
+                message: str = f"Paciente {l['paciente']} sem idade cadastrada"
+                error_dict: dict = {
+                    "tabela": "IdadePaciente",
+                    "tipo": "ERRO",
+                    "mensagem": message,
+                    "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                error_list.append(error_dict)
+
+        if error_list:
+            df_erro = pd.DataFrame(error_list)
+            with pd.ExcelWriter(
+                self.path, engine="openpyxl", mode="a", if_sheet_exists="overlay"
+            ) as writer:
+                df_erro.to_excel(
+                    writer,
+                    sheet_name="Inconsistência",
+                    index=False,
+                    header=False,
+                    startrow=writer.sheets["Inconsistência"].max_row,
+                )
+                error: bool = True
+
+        return error
+
+    def check_professional_availability(self) -> bool:
+
+        error: bool = False
+        error_list = []
+
+        regra_profissional: pd.DataFrame = self.use_cases["RegraProfissional"]
+
+        missing_hours = regra_profissional[regra_profissional["horas_semana"].isnull()]
+
+        if regra_profissional["horas_semana"].isnull().any():
+            for _, l in missing_hours.iterrows():
+                message: str = (
+                    f"Profissional {l['profissional']} sem HORÁRIO cadastrado. Não será alocado"
+                )
+                error_dict: dict = {
+                    "tabela": "RegraProfissional",
+                    "tipo": "AVISO",
+                    "mensagem": message,
+                    "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                error_list.append(error_dict)
+
+        if error_list:
+            df_erro = pd.DataFrame(error_list)
+            with pd.ExcelWriter(
+                self.path, engine="openpyxl", mode="a", if_sheet_exists="overlay"
+            ) as writer:
+                df_erro.to_excel(
+                    writer,
+                    sheet_name="Inconsistência",
+                    index=False,
+                    header=False,
+                    startrow=writer.sheets["Inconsistência"].max_row,
+                )
+                error: bool = True
+
+        return error
+
+    def _get_missing_type(
+        self, regra_profissional: pd.DataFrame, error_list: tuple[list, bool]
+    ) -> list:
+        error: bool = False
+
+        missing_type = regra_profissional[regra_profissional["tipo"].isnull()]
+
+        if missing_type["tipo"].isnull().any():
+            for _, l in missing_type.iterrows():
+                message: str = f"Paciente {l['profissional']} sem tipo cadastrado"
+
+                error_dict: dict = {
+                    "tabela": "RegraProfissional",
+                    "tipo": "AVISO",
+                    "mensagem": message,
+                    "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+
+                error: bool = True
+
+                error_list.append(error_dict)
+        return error_list, error
+
+    def _get_invalid_type(
+        self, regra_profissional: pd.DataFrame, error_list: tuple[list, bool]
+    ) -> list:
+        error: bool = False
+
+        valores_invalidos = regra_profissional[
+            ~regra_profissional["tipo"].isin(["V", "E", "v", "e"])
+        ]
+
+        valores_invalidos = valores_invalidos.dropna(subset=["tipo"])
+
+        if not valores_invalidos.empty:
+            for _, l in valores_invalidos.iterrows():
+                message: str = (
+                    f"Paciente {l['profissional']} tem tipo cadastrado inválido: {l['tipo']}"
+                )
+
+                error_dict: dict = {
+                    "tabela": "RegraProfissional",
+                    "tipo": "AVISO",
+                    "mensagem": message,
+                    "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+
+                error_list.append(error_dict)
+
+            error: bool = True
+
+        return error_list, error
+
+    def check_professional_type(self) -> bool:
+
+        error_missing_type: bool = False
+        error_invalid_type: bool = False
+        error_list = []
+
+        regra_profissional: pd.DataFrame = self.use_cases["RegraProfissional"]
+
+        error_list, error_missing_type = self._get_missing_type(
+            regra_profissional, error_list
+        )
+
+        error_list, error_invalid_type = self._get_invalid_type(
+            regra_profissional, error_list
+        )
+
+        df_erro = pd.DataFrame(error_list)
+
+        if error_list:
             with pd.ExcelWriter(
                 self.path, engine="openpyxl", mode="a", if_sheet_exists="overlay"
             ) as writer:
@@ -34,11 +166,11 @@ class Validator(BaseValidator):
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
 
-            self.error: bool = True
+        return error_missing_type or error_invalid_type
 
-        return self.error
+    def check_has_schedule_profissional(self) -> bool:
 
-    def check_has_schedule_profissional(self):
+        error: bool = False
 
         dispon_profissional: pd.DataFrame = self.use_cases["DisponProfissional"]
 
@@ -60,7 +192,7 @@ class Validator(BaseValidator):
             if valido:
                 error_dict = {
                     "tabela": "DisponProfissional",
-                    "tipo": "ERRO",
+                    "tipo": "AVISO",
                     "mensagem": f"O profissional {profissional} NÃO tem horários alocados.",
                     "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 }
@@ -78,11 +210,55 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
+
+    def check_professional_has_age_range(self) -> bool:
+        error: bool = False
+
+        regra_profissional: pd.DataFrame = self.use_cases["RegraProfissional"]
+
+        regra_profissional["valido"] = regra_profissional.apply(
+            self.validade_x_professional_age_range, axis=1
+        )
+
+        grouped = regra_profissional.groupby("profissional")["valido"].apply(
+            lambda x: (x == False).all()
+        )
+
+        dict_list = []
+
+        for profissional, valido in grouped.items():
+            if valido:
+                error_dict = {
+                    "tabela": "RegraProfissional",
+                    "tipo": "AVISO",
+                    "mensagem": f"O profissional {profissional} NÃO tem NENHUMA idade de preferência alocado. Ele não será alocado.",
+                    "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                }
+                dict_list.append(error_dict)
+
+        if dict_list:
+            df_erro = pd.DataFrame(dict_list)
+            with pd.ExcelWriter(
+                self.path, engine="openpyxl", mode="a", if_sheet_exists="overlay"
+            ) as writer:
+                df_erro.to_excel(
+                    writer,
+                    sheet_name="Inconsistência",
+                    index=False,
+                    header=False,
+                    startrow=writer.sheets["Inconsistência"].max_row,
+                )
+            error: bool = True
+
+        return error
 
     def check_has_places_profissional(self):
+
+        error: bool = False
+
         local_profissional: pd.DataFrame = self.use_cases["LocalProfissional"]
 
         local_profissional["valido"] = local_profissional.apply(
@@ -117,11 +293,13 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
 
     def check_has_schedule_patient(self):
+
+        error: bool = False
 
         dispon_paciente: pd.DataFrame = self.use_cases["DisponPaciente"]
 
@@ -141,7 +319,7 @@ class Validator(BaseValidator):
             if valido:
                 error_dict = {
                     "tabela": "DisponPaciente",
-                    "tipo": "ERRO",
+                    "tipo": "AVISO",
                     "mensagem": f"O paciente {paciente} NÃO tem horários alocados.",
                     "data_atualização": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 }
@@ -159,11 +337,14 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
 
     def check_has_places_patient(self):
+
+        error: bool = False
+
         local_paciente: pd.DataFrame = self.use_cases["LocalPaciente"]
 
         local_paciente["paciente"] = local_paciente["paciente"].ffill()
@@ -201,11 +382,14 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
 
     def check_same_professionals(self):
+
+        error: bool = False
+
         regra_profissional: pd.DataFrame = self.use_cases["RegraProfissional"]
         dispon_profissional: pd.DataFrame = self.use_cases["DisponProfissional"]
         local_profissional: pd.DataFrame = self.use_cases["LocalProfissional"]
@@ -252,11 +436,14 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
 
     def check_same_patients(self):
+
+        error: bool = False
+
         idade_paciente: pd.DataFrame = self.use_cases["IdadePaciente"]
         dispon_paciente: pd.DataFrame = self.use_cases["DisponPaciente"]
         local_paciente: pd.DataFrame = self.use_cases["LocalPaciente"]
@@ -303,6 +490,6 @@ class Validator(BaseValidator):
                     header=False,
                     startrow=writer.sheets["Inconsistência"].max_row,
                 )
-            self.error: bool = True
+            error: bool = True
 
-        return self.error
+        return error
