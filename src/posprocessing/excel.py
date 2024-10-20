@@ -11,21 +11,23 @@ class Exporting:
         df = pd.DataFrame(index=days, columns=hours)
 
         for list in model_data:
-            df.fillna("", inplace=True)
-            print(df)
+            df = df.fillna("")
             df.loc[list[2][0], list[2][1]] += f"{list[0]}-{list[1]}-{list[3]}   "
-
+        df = df.reset_index().rename(columns={"index": "Dias/Horas"})
         return df
 
     def create_solution(model_data: list[list]):
         columns_name: list = [
             "paciente",
             "profissional",
-            "dia_semana",
-            "hora",
+            "intervalo",
             "local",
-            "dt_atualizacao",
         ]
+
         df = pd.DataFrame(model_data, columns=columns_name)
-        print(datetime.now())
-        pass
+
+        df[["dia de semana", "hora"]] = df["intervalo"].apply(pd.Series)
+        df.drop(columns=["intervalo"], inplace=True)
+        df["df_atualizacao"] = datetime.now()
+
+        return df

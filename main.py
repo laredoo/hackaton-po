@@ -7,13 +7,13 @@ from src.app.validator.controller import ValidatorController
 from src.core.factory.factory import Factory
 from src.model.model import Model
 from src.posprocessing.excel import Exporting
-from src.utils.utils import read_sheet
+from src.utils.utils import read_sheet, save_sheet
 
 pp = pprint.PrettyPrinter(indent=10)
 logger = logging.getLogger(__name__)
 
 PATH: str = (
-    r"C:\Users\danin\Desktop\Projects\Desafio Unisoma\hackaton-po\docs\cenario_3.xlsx"
+    r"C:\Users\felip\OneDrive\Documents\Desafio_Unisoma\hackaton-po\docs\cenario_4.xlsx"
 )
 
 
@@ -96,11 +96,16 @@ def posprocessing(
     model_data: list[list], problem_instance: ProblemInstance, use_cases: dict
 ):
 
-    df = Exporting.create_table(
+    schedule_table = Exporting.create_table(
         model_data, problem_instance.sets.hours, problem_instance.sets.days
     )
 
-    print(df)
+    solution = Exporting.create_solution(model_data)
+
+    use_cases["Solução"] = solution
+    use_cases["schedule_table"] = schedule_table
+
+    save_sheet("teste_unisoma.xlsx", use_cases)
 
 
 def main():
@@ -113,7 +118,7 @@ def main():
 
     model_data = run_model(problem_instance=problem_instance)
 
-    use_cases = posprocessing(model_data, problem_instance, use_cases)
+    posprocessing(model_data, problem_instance, use_cases)
 
 
 if __name__ == "__main__":
