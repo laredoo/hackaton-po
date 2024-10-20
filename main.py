@@ -41,10 +41,22 @@ def validate_input(factory: Factory, use_cases: dict, path: str):
         path=path, use_cases=use_cases
     )
 
-    error = validator_controller.validate_input()
+    error_list = validator_controller.validate_input()
 
-    # if error:
-    #     exit(500)
+    if "ERROR" in error_list:
+
+        logger.error(
+            """
+            =====================================================================================================
+            \n\n                                                                                            
+            >>>>>>>>>> [VALIDATOR] THE INPUT FILE CONTAINS ERROR. PLEASE CHECK THE 'Inconsistência' tab.                
+            \n\n                                                                                          
+            =====================================================================================================
+            
+            """
+        )
+
+        exit(500)
 
 
 def preprocess_data(factory: Factory, path_excel: str) -> ProblemInstance:
