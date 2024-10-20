@@ -87,13 +87,19 @@ def run_model(problem_instance: ProblemInstance):
     model.create_variables()
     model.create_constraints()
     model.solve()
-    lista_dados = model.export_result()
+    model_data = model.export_result()
 
-    return lista_dados
+    return model_data
 
 
-def posprocessing(lista_dados, hours, days):
-    df = Exporting.create_table(lista_dados, hours, days)
+def posprocessing(
+    model_data: list[list], problem_instance: ProblemInstance, use_cases: dict
+):
+
+    df = Exporting.create_table(
+        model_data, problem_instance.sets.hours, problem_instance.sets.days
+    )
+
     print(df)
 
 
@@ -101,14 +107,13 @@ def main():
     use_cases: dict = read_sheet(PATH)
     factory = create_factory()
 
-    validate_input(factory)
+    # validate_input(factory)
 
     problem_instance: ProblemInstance = preprocess_data(factory=factory)
 
-    lista_dados = run_model(problem_instance=problem_instance)
+    model_data = run_model(problem_instance=problem_instance)
 
-    posprocessing(lista_dados, problem_instance.sets.hours, problem_instance.sets.days)
-    return problem_instance.parameter.zbr
+    use_cases = posprocessing(model_data, problem_instance, use_cases)
 
 
 if __name__ == "__main__":
@@ -121,4 +126,5 @@ if __name__ == "__main__":
 
     # main function
     main()
+
     logger.info("Execution finished")
